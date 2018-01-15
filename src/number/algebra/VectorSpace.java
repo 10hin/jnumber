@@ -13,10 +13,14 @@ public class VectorSpace<F extends FieldElement<F>> {
 
     private final Class<F> coefficientClass;
     private final int dim;
+    private final int hashCode;
+    private final String toString;
 
     private VectorSpace(final Class<F> coefficientClass, int dim) {
         this.coefficientClass = coefficientClass;
         this.dim = dim;
+        this.hashCode = this.coefficientClass.hashCode() ^ this.dim;
+        this.toString = "VectorSpace(" + dim + ", " + coefficientClass.getCanonicalName() + ")";
     }
 
     public int dim() {
@@ -57,13 +61,13 @@ public class VectorSpace<F extends FieldElement<F>> {
 
     }
 
-    public static <F extends FieldElement<F>> VectorSpace<F>.Vector createVectorWith(F... coeffs) {
+    public static <F extends FieldElement<F>> VectorSpace<F>.Vector createVectorWith(@SuppressWarnings("unchecked") F... coeffs) {
 
         final Class<F> coefficientClass;
         try {
             @SuppressWarnings("unchecked")
             final Class<F> coefficirntClass_ = (Class<F>) coeffs.getClass().getComponentType();
-            coefficientClass = coefficientClass_;
+            coefficientClass = coefficirntClass_;
         } catch (ClassCastException e) {
             throw new InternalError("casting array class compoenent type, but failed.", e);
         }
@@ -86,6 +90,16 @@ public class VectorSpace<F extends FieldElement<F>> {
         }
         VectorSpace<?> other = (VectorSpace<?>) o;
         return Objects.equals(this.coefficientClass, other.coefficientClass) && Objects.equals(this.dim, other.dim);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.hashCode;
+    }
+
+    @Override
+    public String toString() {
+        return this.toString;
     }
 
     public class Vector implements ModuleElement<Vector, F> {
@@ -206,7 +220,7 @@ public class VectorSpace<F extends FieldElement<F>> {
 
         @Override
         public String toString() {
-            StringBuilder builder = new StringBuilder("Vector: (");
+            StringBuilder builder = new StringBuilder("Vector(");
             boolean first = true;
             for (F coeff : this.coeffs) {
                 if (first) {

@@ -24,7 +24,6 @@ public class UseMatrix {
         }));
 
         Matrices<MathInteger>.Matrix c = a.multiply(b);
-        System.out.println(c);
 
         Matrices<MathInteger>.Matrix d = Matrices.createMatrixWith( //
                 mathIntegerOf(new long[][] {
@@ -35,6 +34,7 @@ public class UseMatrix {
         System.out.println(c);
         System.out.println();
         System.out.println(d);
+        System.out.println();
         System.out.println(d.matrices().equals(a.matrices()));
         System.out.println(d.matrices() == a.matrices());
 

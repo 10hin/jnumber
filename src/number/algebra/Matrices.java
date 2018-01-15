@@ -3,6 +3,7 @@ package number.algebra;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import utils.CacheMap;
 import utils.Tuple;
@@ -15,6 +16,8 @@ public class Matrices<R extends RingElement<R>> {
     private final Class<R[]> rowArrayClass;
     private final int rowSize;
     private final int columnSize;
+    private final int hashCode;
+    private final String toString;
 
     private Matrices(final Class<R> coefficientClass, final int rowSize, final int columnSize) {
         this.coefficientClass = coefficientClass;
@@ -23,6 +26,8 @@ public class Matrices<R extends RingElement<R>> {
         this.rowArrayClass = rowArrayClass;
         this.columnSize = columnSize;
         this.rowSize = rowSize;
+        this.hashCode = coefficientClass.hashCode() ^ rowSize ^ Integer.rotateLeft(columnSize, 16);
+        this.toString = "Matrices(" + rowSize + ", " + columnSize + ", " + coefficientClass.getCanonicalName() + ")";
     }
 
     public Matrix getWith(final R[][] coeffs) {
@@ -102,6 +107,16 @@ public class Matrices<R extends RingElement<R>> {
                 && this.rowArrayClass == other.rowArrayClass //
                 && this.columnSize == other.columnSize //
                 && this.rowSize == other.rowSize;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.hashCode;
+    }
+
+    @Override
+    public String toString() {
+        return this.toString;
     }
 
     public class Matrix implements ModuleElement<Matrix, R> {
@@ -290,7 +305,7 @@ public class Matrices<R extends RingElement<R>> {
         @Override
         public String toString() {
             if (this.toString.get() == null) {
-                final String toString = constructString(this);
+                final String toString = constructInlineString(this);
 
                 this.toString.compareAndSet(null, toString);
             }
@@ -299,7 +314,15 @@ public class Matrices<R extends RingElement<R>> {
 
     }
 
-    private static <R extends RingElement<R>> String constructString(final Matrices<R>.Matrix self) {
+    private static <R extends RingElement<R>> String constructInlineString(final Matrices<R>.Matrix self) {
+        return Arrays.stream(self.coeffs) //
+                .map(row -> Arrays.stream(row) //
+                        .map(Object::toString) //
+                        .collect(Collectors.joining(", ", "[", "]"))) //
+                .collect(Collectors.joining(", ", "[", "]"));
+    }
+
+    private static <R extends RingElement<R>> String constructMultilineString(final Matrices<R>.Matrix self) {
 
         final int[] columnWidth = new int[self.matrices.columnSize];
         Arrays.fill(columnWidth, 0);
