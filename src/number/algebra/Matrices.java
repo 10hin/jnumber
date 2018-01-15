@@ -327,10 +327,12 @@ public class Matrices<R extends RingElement<R>> {
                 } else {
                     builder.append(" ");
                 }
-                builder.append(self.coeffs[i][j].toString());
+                builder.append(String.format("%" + columnWidth[j] + "s", self.coeffs[i][j].toString()));
             }
             builder.append("]");
         }
+
+        return builder.toString();
 
     }
 
